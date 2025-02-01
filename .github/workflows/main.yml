@@ -1,22 +1,23 @@
 name: Run Telegram Bot
 
 on:
-  schedule:
-    - cron: "*/15 * * * *"  # هر 15 دقیقه یک بار اجرا می‌شود
-  workflow_dispatch:  # امکان اجرای دستی
+  push:
+    branches:
+      - main  # اجرا هنگام push به شاخه main
+  workflow_dispatch:  # امکان اجرای دستی در GitHub Actions
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3  # دریافت کدهای پروژه
 
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: '3.10'  # نصب نسخه ۳.۱۰ پایتون
 
       - name: Install Dependencies
         run: |
@@ -24,4 +25,4 @@ jobs:
           pip install python-telegram-bot
 
       - name: Run Bot
-        run: python main.py
+        run: python main.py  # اجرای فایل اصلی بات تلگرام
