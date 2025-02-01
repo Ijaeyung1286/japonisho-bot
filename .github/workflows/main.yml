@@ -1,14 +1,9 @@
-name: Persistent Bot
+name: Run Telegram Bot
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-  workflow_run:
-    workflows: ["Persistent Bot"]
-    types:
-      - completed
+  schedule:
+    - cron: "*/15 * * * *"  # هر 15 دقیقه یک بار اجرا می‌شود
+  workflow_dispatch:  # امکان اجرای دستی
 
 jobs:
   run-bot:
@@ -30,8 +25,3 @@ jobs:
 
       - name: Run Bot
         run: python main.py
-
-      - name: Restart Workflow
-        if: always()
-        run: gh workflow run main.yml
-   
