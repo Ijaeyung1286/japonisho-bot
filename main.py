@@ -1,5 +1,3 @@
-import os
-from dotenv import load_dotenv
 from typing import Final
 from telegram import (Update , InlineKeyboardButton,
                       InlineKeyboardMarkup,
@@ -9,8 +7,7 @@ from telegram.ext import (Application ,
                           MessageHandler,
                           CallbackQueryHandler, ContextTypes, filters)
 
-load_dotenv()
-TOKEN: Final = os.getenv("BOT_TOKEN")
+TOKEN: Final = "7839381439:AAEz3pXjiGFxdJ5knWQ6P4op9b_rryuSumU"
 print(TOKEN)
 BOTNAME: Final = "@japonisho_bot"
 
