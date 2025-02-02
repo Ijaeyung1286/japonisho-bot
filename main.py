@@ -163,7 +163,7 @@ async def message_text_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     elif context.user_data.get("check"):
         if response_to_message(context.user_data.get("text")):
             button = [
-                [InlineKeyboardButton(text="پاسخ", callback_data=f"answer_{chat_id}_{update.message.chat.username}_{update.message.message_id}")]
+                [InlineKeyboardButton(text="پاسخ",callback_data=f"answer____{chat_id}____{update.message.chat.username}____{message_id.message_id}")]
             ]
             reply_markup1 = InlineKeyboardMarkup(button)
             if await context.bot.send_message(text=f"""💵🤑--------🤑💵\nپیام پرداخت کاربر: 
@@ -213,7 +213,7 @@ async def picture_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if context.user_data.get("check"):
         button = [
-            [InlineKeyboardButton(text="پاسخ", callback_data=f"answer_{chat_id}_{update.message.chat.username}_{update.message.message_id}")]
+            [InlineKeyboardButton(text="پاسخ",callback_data=f"answer____{chat_id}____{update.message.chat.username}____{message_id.message_id}")]
         ]
         reply_markup1 = InlineKeyboardMarkup(button)
         if await context.bot.send_photo(photo=pic, chat_id=backup_id,reply_markup=reply_markup1):
