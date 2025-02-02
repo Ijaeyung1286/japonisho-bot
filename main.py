@@ -134,7 +134,7 @@ async def message_text_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         message_id = update.message
         text = message_id.text
         button = [
-            [InlineKeyboardButton(text="پاسخ",callback_data=f"answer_{chat_id}_{update.message.chat.username}_{message_id.message_id}")]
+            [InlineKeyboardButton(text="پاسخ",callback_data=f"answer____{chat_id}____{update.message.chat.username}____{message_id.message_id}")]
         ]
         reply_markup1= InlineKeyboardMarkup(button)
         send_text = f"کاربر با یوزر نیم :  {update.message.chat.username} و id: {chat_id}  گفت: {text}"
@@ -268,9 +268,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data.startswith("answer"):
         button = [["بازگشت"]]
         reply_markup  = ReplyKeyboardMarkup(button,resize_keyboard=True)
-        user_id = int(query.data.split("_")[1])
-        user_name= query.data.split("_")[2]
-        message = query.data.split("_")[3]
+        user_id = int(query.data.split("____")[1])
+        user_name= query.data.split("____")[2]
+        message = query.data.split("____")[3]
         await context.bot.send_message(
             text=f"پاسخ خود را به کاربر: {user_id} با ایدی: {user_name} را ارسال کنید:",
             chat_id=backup_id, reply_markup=reply_markup)
