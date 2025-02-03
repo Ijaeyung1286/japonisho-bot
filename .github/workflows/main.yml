@@ -30,5 +30,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install python-telegram-bot
 
-      - name: Run Bot
-        run: python main.py  # اجرای فایل اصلی بات تلگرام
+      
+        
+      - name: Run Python script with Secret
+        env:
+          API_KEY: ${{ secrets.BOT_KEY }}
+        run: python main.py
