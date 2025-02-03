@@ -8,7 +8,7 @@ from telegram.ext import (Application ,
                           MessageHandler,
                           CallbackQueryHandler, ContextTypes, filters)
 
-TOKEN: Final = os.getenv("BOT_KEY")
+TOKEN: Final = os.getenv("API_KEY")
 print(TOKEN)
 BOTNAME: Final = "@japonisho_bot"
 backup_id: Final = 5271088482
