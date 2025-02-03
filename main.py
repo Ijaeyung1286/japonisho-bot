@@ -1,4 +1,5 @@
 from typing import Final
+import os
 from telegram import (Update , InlineKeyboardButton,
                       InlineKeyboardMarkup,
                       ReplyKeyboardMarkup)
@@ -7,7 +8,7 @@ from telegram.ext import (Application ,
                           MessageHandler,
                           CallbackQueryHandler, ContextTypes, filters)
 
-TOKEN: Final = "7839381439:AAEz3pXjiGFxdJ5knWQ6P4op9b_rryuSumU"
+TOKEN: Final = os getenv("BOT_KEY")
 print(TOKEN)
 BOTNAME: Final = "@japonisho_bot"
 backup_id: Final = 5271088482
