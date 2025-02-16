@@ -22,6 +22,9 @@ keyboards = [
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(f"chat id = {update.message.chat.id}")
     context.user_data["chat_id"] = update.message.chat.id
+    context.user_data["check"] = False
+    context.user_data["form"] = False
+    context.user_data["backup"] = False
     global keyboards
 
     reply_markup = ReplyKeyboardMarkup(keyboards, resize_keyboard=True)
@@ -102,6 +105,7 @@ def response_to_message(text):
 
 async def message_text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
+    query = update.callback_query
     context.user_data["text"] = update.message.text
     global prush_message
     #backup_id: Final = 110729511
@@ -130,7 +134,6 @@ async def message_text_handler(update: Update, context: ContextTypes.DEFAULT_TYP
             await context.bot.send_message(text="پاسخ به کاربر لغو شد",
                                            chat_id=backup_id, reply_markup=reply_markup)
 
-
     if context.user_data.get("backup"):
         message_id = update.message
         text = message_id.text
@@ -144,6 +147,20 @@ async def message_text_handler(update: Update, context: ContextTypes.DEFAULT_TYP
             reply_markup = ReplyKeyboardMarkup(keyboards, resize_keyboard=True)
             await context.bot.send_message(text="پیام ارسال شد", chat_id=chat_id,
                                            reply_markup=reply_markup)
+        elif context.user_data.get("check") or context.user_data.get("form"):
+            context.user_data["check"] = False
+            context.user_data["form"] = False
+            reply_markup = ReplyKeyboardMarkup(keyboards, resize_keyboard=True)
+            try:
+                await context.bot.deleteMessage(chat_id=chat_id, message_id=form.message_id)
+                await context.bot.deleteMessage(chat_id=chat_id, message_id=hire_message.message_id)
+                await context.bot.deleteMessage(chat_id=chat_id, message_id=prush_message.message_id)
+            except Exception as e :
+                print(f"error caused: {e}")
+            await context.bot.send_message(chat_id=chat_id,
+                                           text="پرداخت لغو شد",
+                                           reply_markup=reply_markup)
+
         context.user_data["backup"] = False
     elif context.user_data.get("form"):
         context.user_data["check"] = True
@@ -181,15 +198,38 @@ async def message_text_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         else:
             await context.bot.send_message(text="لطفا پیامک پرداخت رو ارسال کنید", chat_id=chat_id)
     elif context.user_data.get("text") == "ثبت نام":
-        await prush_command(update,context)
+        try:
+            if context.user_data["backup"]:
+                await query.answer(
+                    text="شما در حال پیام به پشتیبانی هستید, لطفا اول پیام خود را ارسال کنید\n یا اینکه دکمه بازگشت را بزنید",
+                    show_alert=True)
+            else:
+                await prush_command(update, context)
+        except Exception:
+            return await prush_command(update, context)
     elif context.user_data.get("text") == "پشتیبانی":
         context.user_data["backup"] = True
-        button = [
-            ["بازگشت"]
-        ]
-        reply_markup = ReplyKeyboardMarkup(button, resize_keyboard=True)
-        await context.bot.send_message(text="پیام خود را ارسال کنید",
-                                       chat_id=chat_id, reply_markup=reply_markup)
+        try:
+            if context.user_data["form"] or context.user_data["check"]:
+                await query.answer(
+                    text="شما در حال ثبت نام هستید,لطفا اول ثبت نام خود را کامل کنید \n یا اینکه دکمه بازگشت یا انصراف از پرداخت رو بزنید",
+                    show_alert=True)
+                context.user_data["backup"] = False
+            else:
+                button = [
+                    ["بازگشت"]
+                ]
+                reply_markup = ReplyKeyboardMarkup(button, resize_keyboard=True)
+                return await context.bot.send_message(text="پیام خود را ارسال کنید",
+                                                      chat_id=chat_id, reply_markup=reply_markup)
+        except Exception:
+            button = [
+                ["بازگشت"]
+            ]
+            reply_markup = ReplyKeyboardMarkup(button, resize_keyboard=True)
+            return await context.bot.send_message(text="پیام خود را ارسال کنید",
+                                                  chat_id=chat_id, reply_markup=reply_markup)
+
     elif context.user_data.get("text") == "راهنما ثبت نام":
         await help_command(update, context)
     elif context.user_data.get("an"):
@@ -236,38 +276,74 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     chat_id = update.effective_chat.id
     query = update.callback_query
-    if query.data == "prush":
-        await prush_command(update,context)
-    elif query.data == "backup":
-        context.user_data["backup"] = True
-        button = [
-            ["بازگشت"]
-        ]
-        reply_markup = ReplyKeyboardMarkup(button, resize_keyboard=True)
-        await context.bot.send_message(text="پیام خود را ارسال کنید",
-                                       chat_id=chat_id, reply_markup=reply_markup)
-        print(f"back up = {context.user_data["backup"]}")
-    elif query.data == "ready_to_check":
-        context.user_data["check"] = True
-        context.user_data["form"] = False
-        await context.bot.send_message(text="پیامک یا عکس پردخت رو ارسال کنید", chat_id=chat_id)
-    elif query.data == "cancel":
-        context.user_data["check"] = False
-        context.user_data["form"] = False
-        reply_markup = ReplyKeyboardMarkup(keyboards, resize_keyboard=True)
-        try:
-            await context.bot.deleteMessage(chat_id=chat_id, message_id=form.message_id)
-            await context.bot.deleteMessage(chat_id=chat_id, message_id=hire_message.message_id)
-            await context.bot.deleteMessage(chat_id=chat_id, message_id=prush_message.message_id)
+    data = query.data
 
-        except Exception as e:
-            print(f"error caused : {e}")
-        await context.bot.send_message(chat_id=chat_id,
-                                       text="پرداخت لغو شد",
-                                       reply_markup=reply_markup)
-    elif query.data =="help":
-        await help_command(update,context)
-    elif query.data.startswith("answer"):
+    match data:
+        case "prush":
+           try:
+               if context.user_data["backup"]:
+                   await query.answer(
+                       text="شما در حال پیام به پشتیبانی هستید, لطفا اول پیام خود را ارسال کنید\n یا اینکه دکمه بازگشت را بزنید",
+                       show_alert=True)
+               else:
+                   return await prush_command(update, context)
+           except Exception:
+               return await prush_command(update, context)
+        case "backup":
+            context.user_data["backup"] = True
+            try:
+                if context.user_data["form"] or context.user_data["check"]:
+                    await query.answer(text="شما در حال ثبت نام هستید,لطفا اول ثبت نام خود را کامل کنید \n یا اینکه دکمه بازگشت یا انصراف از پرداخت رو بزنید",show_alert=True)
+                    context.user_data["backup"] = False
+                else:
+                    button = [
+                        ["بازگشت"]
+                    ]
+                    reply_markup = ReplyKeyboardMarkup(button, resize_keyboard=True)
+                    return await context.bot.send_message(text="پیام خود را ارسال کنید",
+                                                          chat_id=chat_id, reply_markup=reply_markup)
+            except Exception :
+                button = [
+                    ["بازگشت"]
+                ]
+                reply_markup = ReplyKeyboardMarkup(button, resize_keyboard=True)
+                return await context.bot.send_message(text="پیام خود را ارسال کنید",
+                                                      chat_id=chat_id, reply_markup=reply_markup)
+        case "ready_to_check":
+            context.user_data["check"] = True
+            context.user_data["form"] = False
+            return await context.bot.send_message(text="پیامک یا عکس پردخت رو ارسال کنید", chat_id=chat_id)
+        case "cancel":
+            context.user_data["check"] = False
+            context.user_data["form"] = False
+            reply_markup = ReplyKeyboardMarkup(keyboards, resize_keyboard=True)
+            try:
+                await context.bot.deleteMessage(chat_id=chat_id, message_id=form.message_id)
+                await context.bot.deleteMessage(chat_id=chat_id, message_id=hire_message.message_id)
+                await context.bot.deleteMessage(chat_id=chat_id, message_id=prush_message.message_id)
+
+            except Exception as e:
+                print(f"error caused : {e}")
+            return await context.bot.send_message(chat_id=chat_id,
+                                           text="پرداخت لغو شد",
+                                           reply_markup=reply_markup)
+        case "help":
+            try:
+                if context.user_data["backup"]:
+                    await query.answer(
+                        text="شما در حال پیام به پشتیبانی هستید, لطفا اول پیام خود را ارسال کنید\n یا اینکه دکمه بازگشت را بزنید",
+                        show_alert=True)
+                elif context.user_data["form"] or context.user_data["check"]:
+                    await query.answer(
+                        text="شما در حال ثبت نام هستید,لطفا اول ثبت نام خود را کامل کنید \n یا اینکه دکمه بازگشت یا انصراف از پرداخت رو بزنید",
+                        show_alert=True)
+                else:
+                    return await help_command(update, context)
+            except Exception:
+                return await help_command(update, context)
+
+
+    if query.data.startswith("answer"):
         button = [["بازگشت"]]
         reply_markup  = ReplyKeyboardMarkup(button,resize_keyboard=True)
         user_id = int(query.data.split("____")[1])
@@ -293,6 +369,4 @@ if __name__ == "__main__":
     app.add_handler(CallbackQueryHandler(button_handler))
     print("polling ...")
     app.run_polling(poll_interval=0.5)
-
-
 
